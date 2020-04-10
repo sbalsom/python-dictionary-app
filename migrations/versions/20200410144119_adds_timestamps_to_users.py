@@ -1,8 +1,8 @@
 """adds timestamps to users
 
-Revision ID: e1741290b6a9
-Revises: 141d0e8b40d0
-Create Date: 2020-04-10 13:32:53.331504
+Revision ID: ecefebb0e35f
+Revises: b9903a5f902c
+Create Date: 2020-04-10 14:41:19.295657
 
 """
 from alembic import op
@@ -10,8 +10,8 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision = 'e1741290b6a9'
-down_revision = '141d0e8b40d0'
+revision = 'ecefebb0e35f'
+down_revision = 'b9903a5f902c'
 branch_labels = None
 depends_on = None
 
