@@ -3,10 +3,19 @@ from alembic import context
 from sqlalchemy import engine_from_config, pool
 from logging.config import fileConfig
 import logging
-# import os
-# import sys
 from flask import current_app
-# from app import db, create_app
+
+# this will only work once i have defined create_app() in my app/__init__ file
+try:
+    app = current_app._get_current_object()
+except RuntimeError:
+    import os
+    import sys
+    sys.path.append(os.getcwd())
+    from app import create_app, db
+    app = create_app()
+# config.set_main_option("sqlalchemy.url", app.config["SQLALCHEMY_DATABASE_URI"])
+# target_metadata = db.metadata
 # to configure alembic as well see :
 # https://github.com/miguelgrinberg/Flask-Migrate/issues/32
 # and https://github.com/davidism/basic_flask/blob/master/alembic/env.py
