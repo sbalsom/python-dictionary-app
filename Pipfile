@@ -10,6 +10,7 @@ flask = "*"
 flask-migrate = "*"
 python-dotenv = "*"
 flask-sqlalchemy = "*"
+flask-login = "*"
 
 [requires]
 python_version = "3.7"
