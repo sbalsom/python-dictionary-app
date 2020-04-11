@@ -9,7 +9,7 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(64), index=True, unique=True)
     email = db.Column(db.String(120), index=True, unique=True)
     password_hash = db.Column(db.String(128))
-    dictionary = db.relationship('Dictionary', backref='owner', lazy='dynamic')
+    dictionaries = db.relationship('Dictionary', backref='owner', lazy='dynamic')
     date_created  = db.Column(db.DateTime,  index=True, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                        onupdate=db.func.current_timestamp())
@@ -24,6 +24,13 @@ class User(UserMixin, db.Model):
     def check_password(self, password):
       return check_password_hash(self.password_hash, password)
 
+    def as_json(self):
+      response = {
+        "id": self.id,
+        "username": self.username
+      }
+      return response
+
 
 class Dictionary(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -37,6 +44,18 @@ class Dictionary(db.Model):
     def __repr__(self):
         return '<Dictionary {}: {}, user_id: {}>'.format(self.id, self.name, self.user_id)
 
+    def as_json(self):
+      words = []
+      for w in self.words:
+        words.append(w.as_json())
+      response = {
+        "id": self.id,
+        "name": self.name,
+        "owner": self.owner.as_json(),
+        "words": words
+      }
+      return response
+
 class Word(db.Model):
   id = db.Column(db.Integer, primary_key=True)
   name = db.Column(db.String(120))
@@ -47,3 +66,12 @@ class Word(db.Model):
 
   def __repr__(self):
         return '<Word {}: {}>'.format(self.id, self.name)
+
+  def as_json(self):
+    response = {
+      "id": self.id,
+      "name": self.name
+    }
+    return response
+
+
