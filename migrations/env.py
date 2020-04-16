@@ -5,15 +5,11 @@ from logging.config import fileConfig
 import logging
 from flask import current_app
 
+
+
 # this will only work once i have defined create_app() in my app/__init__ file
-try:
-    app = current_app._get_current_object()
-except RuntimeError:
-    import os
-    import sys
-    sys.path.append(os.getcwd())
-    from app import create_app, db
-    app = create_app()
+app = current_app._get_current_object()
+
 # config.set_main_option("sqlalchemy.url", app.config["SQLALCHEMY_DATABASE_URI"])
 # target_metadata = db.metadata
 # to configure alembic as well see :

@@ -1,7 +1,8 @@
 from flask import request, jsonify, json
 from flask_login import current_user, login_user, logout_user, login_required
-from app import db
-from app.auth import auth
+from app import db, login
+from app.auth import bp
+from app.models import User
 #  TODO : setup email for password reset
 # from app.auth.email import send_password_reset_email
 
@@ -13,7 +14,7 @@ def load_user(id):
 def unauthorized():
     return 'Not authorized.', 401
 
-@auth.route('/register', methods=['POST'])
+@bp.route('/register', methods=['POST'])
 def register():
   if current_user.is_authenticated:
     return 'You are already logged in.', 200
@@ -32,10 +33,10 @@ def register():
       return 'User already exists', 422
   return 'Please check your registration details and try again.', 422
 
-@auth.route('/login', methods=['POST'])
+@bp.route('/login', methods=['POST'])
 def login():
   if current_user.is_authenticated:
-    return redirect(url_for('home'))
+    return 'you are already logged in', 200
   username = request.json.get('username')
   password = request.json.get('password')
   user = User.query.filter_by(username=username).first()
@@ -48,7 +49,7 @@ def login():
     login_user(user, remember=remember)
     return 'Success.', 200
 
-@auth.route('/logout')
+@bp.route('/logout')
 def logout():
   logout_user()
   return 'Successfully logged out.', 200

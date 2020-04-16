@@ -11,6 +11,7 @@ flask-migrate = "*"
 python-dotenv = "*"
 flask-sqlalchemy = "*"
 flask-login = "*"
+psycopg2-binary = "*"
 
 [requires]
 python_version = "3.7"
