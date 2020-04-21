@@ -1,5 +1,11 @@
 from app import create_app, db
-from app.models import User, Dictionary, Word, UserWord, followers
+# from app.api.dictionaries.dictionary import Dictionary
+from app.models import followers, User, UserWord, Dictionary, Word
+# from app.api.user_words.user_word import UserWord
+# from app.api.words.word import Word
+# from app.api.users.user import User
+# import app.api.users.user
+# from app.models import User
 
 app = create_app()
 

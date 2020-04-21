@@ -1,8 +1,13 @@
 from datetime import datetime, timedelta
 import unittest
 from app import db, create_app
-from app.models import User, Word, Dictionary, UserWord
+# from app.api.dictionaries.dictionary import Dictionary
+from app.models import followers, Dictionary, User, UserWord, Word
+# import app.api.users.user
+# from app.api.user_words.user_word import UserWord
+# from app.api.words.word import Word
 from config import TestConfig
+from sqlalchemy.exc import IntegrityError
 
 class UserModelCase(unittest.TestCase):
     def setUp(self):
@@ -45,7 +50,7 @@ class UserModelCase(unittest.TestCase):
         self.assertEqual(u1.followed.count(), 0)
         self.assertEqual(u2.followers.count(), 0)
 
-    def test_follow_posts(self):
+    def test_follow_words(self):
         # create four users
         u1 = User(username='john', email='john@example.com')
         u2 = User(username='susan', email='susan@example.com')
@@ -99,6 +104,29 @@ class UserModelCase(unittest.TestCase):
         self.assertEqual(f2, [uw6, uw3])
         self.assertEqual(f3, [uw5, uw4])
         self.assertEqual(f4, [])
+
+    def test_unique_words_in_dict(self):
+      u1 = User(username='john', email='john@example.com')
+      d1 = Dictionary(name='john dict', user_id=u1.id)
+      w1 = Word(name="cool")
+      db.session.add_all([u1, d1, w1])
+      db.session.commit()
+
+      uw1 = UserWord(word_id=w1.id, user_id=u1.id, dictionary_id=d1.id)
+
+      db.session.add(uw1)
+      db.session.commit()
+
+      # trying to add the same word twice
+      db.session.add(uw1)
+
+      try:
+        db.session.commit()
+
+      except IntegrityError:
+        db.session.rollback()
+        words = db.session.query(UserWord).filter(UserWord.word_id == w1.id, UserWord.user_id == u1.id, UserWord.dictionary_id == d1.id)
+        self.assertTrue(words.count() == 1)
 
 if __name__ == '__main__':
     unittest.main(verbosity=2)
