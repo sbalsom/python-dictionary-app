@@ -13,6 +13,8 @@ flask-sqlalchemy = "*"
 flask-login = "*"
 psycopg2-binary = "*"
 flask-httpauth = "*"
+psycopg2 = "*"
+gunicorn = "*"
 
 [requires]
 python_version = "3.7"
