@@ -1,5 +1,5 @@
 # from datetime import datetime
-from app import db
+# from app import db
 
 from flask import url_for
 
@@ -10,6 +10,8 @@ from flask_login import UserMixin
 import base64
 from datetime import datetime, timedelta
 import os
+# from app.api.words.word import Test
+# import app.api.words
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),
@@ -60,8 +62,8 @@ class UserWord(db.Model):
     date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
 
-
-class Word(db.Model, APIMixin):
+# how to have word inherit from a class i import from another module
+class Word(db.Model):
     __tablename__ = 'words'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
@@ -70,16 +72,9 @@ class Word(db.Model, APIMixin):
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                          onupdate=db.func.current_timestamp())
 
-
+# TODO : These methods can be written on a class called WordSerializer and called that way from routes
     def __repr__(self):
         return '<Word {}: {}>'.format(self.id, self.name)
-
-    def as_json(self):
-        response = {
-          'id': self.id,
-          'name': self.name
-        }
-        return response
 
     def from_json(self, data):
         for field in ['name']:
@@ -87,7 +82,7 @@ class Word(db.Model, APIMixin):
                 setattr(self, field, data[field])
 
 
-class Dictionary(db.Model, APIMixin):
+class Dictionary(db.Model):
     __tablename__ = 'dictionaries'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
@@ -109,7 +104,7 @@ class Dictionary(db.Model, APIMixin):
         }
         return response
 
-class User(UserMixin, db.Model, APIMixin):
+class User(UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)

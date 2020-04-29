@@ -4,38 +4,50 @@ from app.models import Word
 from app.api.auth import token_auth
 from app.api.errors import bad_request
 from app.api.words import bp
-
+from app.api.words.word import WordMethods
 
 @bp.route('/words', methods=['GET'])
 @token_auth.login_required
 def index():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-    data = Word.paginated_collection(Word.query, page, per_page, 'words.index')
-    return jsonify(data)
+    words = Word.query.all()
+    """
+    is there a way that the class Word can inherit
+    from WordMethods and then this method could
+    be called on word or Word
+    """
+    json = WordMethods.as_json_collection(WordMethods, words)
+    return jsonify(json)
 
 @bp.route('/words/<int:id>', methods=['GET'])
 @token_auth.login_required
 def show(id):
-    return jsonify(Word.query.get_or_404(id).as_json())
+    word = Word.query.get_or_404(id)
+    json = WordMethods.as_json(word)
+    return jsonify(json)
 
 @bp.route('/words', methods=['POST'])
 @token_auth.login_required
 def create():
+    """
+    How to refactor this one .....
+    from_json needs to be called on word ...
+    so maybe in this case we use inheritance ...
+    """
     data = request.get_json() or {}
     if 'name' not in data:
         return bad_request('word cannot be blank')
     if Word.query.filter_by(name=data['name']).first():
-      # return the word that exists ?
         return bad_request('word already exists')
     word = Word()
     word.from_json(data)
     db.session.add(word)
     db.session.commit()
-    response = jsonify(word.as_json())
+    response = jsonify(WordMethods.as_json(word))
     response.status_code = 201
     response.headers['Location'] = url_for('words.show', id=word.id)
     return response
+
+
 
 @bp.route('/words/<int:id>', methods=['PUT'])
 @token_auth.login_required

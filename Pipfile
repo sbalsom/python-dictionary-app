@@ -15,6 +15,7 @@ psycopg2-binary = "*"
 flask-httpauth = "*"
 psycopg2 = "*"
 gunicorn = "*"
+flask-jwt = "*"
 
 [requires]
 python_version = "3.7"
