@@ -56,7 +56,7 @@ class APIMixin(object):
         }
 
         return response
-class Dictionary(db.Model):
+class Dictionary(d.DictionaryMethods, db.Model):
     __tablename__ = 'dictionaries'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(120))
@@ -65,32 +65,32 @@ class Dictionary(db.Model):
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                        onupdate=db.func.current_timestamp())
 
-    # words = db.relationship('Word', backref='dictionary', lazy='dynamic')
+    words = db.relationship('UserWord', back_populates='dictionary')
 
     def __repr__(self):
         return '<Dictionary {}: {} by {}>'.format(self.id, self.name, self.user_id)
 
-    def as_json(self):
-        response = {
-          'id': self.id,
-          'name': self.name,
-          'owner': self.owner.as_json(),
-          '_link': url_for('dictionaries.show', id=self.id)
-        }
-        return response
+    # def as_json(self):
+    #     response = {
+    #       'id': self.id,
+    #       'name': self.name,
+    #       'owner': self.owner.as_json(),
+    #       '_link': url_for('dictionaries.show', id=self.id)
+    #     }
+    #     return response
 
 class UserWord(uw.UserWordMethods, db.Model):
     __tablename__ = 'user_words'
     __table_args__ = (db.UniqueConstraint('word_id', 'dictionary_id', name='_dictionary_word_combo_id'),
                        )
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False, primary_key=True)
     word_id = db.Column(db.Integer, db.ForeignKey('words.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
     dictionary_id = db.Column(db.Integer, db.ForeignKey('dictionaries.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
     date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
     user = db.relationship("User", lazy="joined")
     word = db.relationship("Word", lazy="joined")
-    dictionary = db.relationship("Dictionary", lazy="joined")
+    dictionary = db.relationship("Dictionary", back_populates="words")
 
 class Word(w.WordMethods, db.Model):
     __tablename__ = 'words'
@@ -108,7 +108,7 @@ class User(UserMixin, db.Model):
     email = db.Column(db.String(120), index=True, unique=True)
     about_me = db.Column(db.String(140))
     password_hash = db.Column(db.String(128))
-    dictionaries = db.relationship('Dictionary', backref='owner', lazy='dynamic')
+    dictionaries = db.relationship('Dictionary', backref='user', lazy='dynamic')
     token = db.Column(db.String(32), index=True, unique=True)
     token_expiration = db.Column(db.DateTime)
     date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())

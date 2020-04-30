@@ -17,7 +17,7 @@ class WordMethods():
 
     def as_json(self):
         response = {
-          'id': self.id,
+          '_id': self.id,
           'name': self.name
         }
         return response
