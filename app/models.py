@@ -12,6 +12,11 @@ from datetime import datetime, timedelta
 import os
 # from app.api.words.word import Test
 # import app.api.words
+from app.methods import w, uw, d
+# from app.methods import user_word_methods as uw
+
+# from app.api.words import word
+
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),
@@ -51,37 +56,6 @@ class APIMixin(object):
         }
 
         return response
-
-class UserWord(db.Model):
-    __tablename__ = 'user_words'
-    __table_args__ = (db.UniqueConstraint('word_id', 'dictionary_id', name='_dictionary_word_combo_id'),
-                       )
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    word_id = db.Column(db.Integer, db.ForeignKey('words.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
-    dictionary_id = db.Column(db.Integer, db.ForeignKey('dictionaries.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
-    date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
-
-# how to have word inherit from a class i import from another module
-class Word(db.Model):
-    __tablename__ = 'words'
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(120))
-    dictionary_id = db.Column(db.Integer, db.ForeignKey('dictionaries.id'))
-    date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
-    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
-                                         onupdate=db.func.current_timestamp())
-
-# TODO : These methods can be written on a class called WordSerializer and called that way from routes
-    def __repr__(self):
-        return '<Word {}: {}>'.format(self.id, self.name)
-
-    def from_json(self, data):
-        for field in ['name']:
-            if field in data:
-                setattr(self, field, data[field])
-
-
 class Dictionary(db.Model):
     __tablename__ = 'dictionaries'
     id = db.Column(db.Integer, primary_key=True)
@@ -91,9 +65,10 @@ class Dictionary(db.Model):
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                        onupdate=db.func.current_timestamp())
 
-    words = db.relationship('Word', backref='dictionary', lazy='dynamic')
+    # words = db.relationship('Word', backref='dictionary', lazy='dynamic')
+
     def __repr__(self):
-        return '<Dictionary {}: {}, user_id: {}>'.format(self.id, self.name, self.user_id)
+        return '<Dictionary {}: {} by {}>'.format(self.id, self.name, self.user_id)
 
     def as_json(self):
         response = {
@@ -103,6 +78,28 @@ class Dictionary(db.Model):
           '_link': url_for('dictionaries.show', id=self.id)
         }
         return response
+
+class UserWord(uw.UserWordMethods, db.Model):
+    __tablename__ = 'user_words'
+    __table_args__ = (db.UniqueConstraint('word_id', 'dictionary_id', name='_dictionary_word_combo_id'),
+                       )
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    word_id = db.Column(db.Integer, db.ForeignKey('words.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
+    dictionary_id = db.Column(db.Integer, db.ForeignKey('dictionaries.id'), primary_key=True, autoincrement=False, index=True, nullable=False)
+    date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+    user = db.relationship("User", lazy="joined")
+    word = db.relationship("Word", lazy="joined")
+    dictionary = db.relationship("Dictionary", lazy="joined")
+
+class Word(w.WordMethods, db.Model):
+    __tablename__ = 'words'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(120))
+    dictionary_id = db.Column(db.Integer, db.ForeignKey('dictionaries.id'))
+    date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
+    date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
+                                         onupdate=db.func.current_timestamp())
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
