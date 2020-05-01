@@ -3,6 +3,8 @@ import base64
 from datetime import datetime, timedelta
 import os
 from app import db
+# from flask_jwt import JWT, jwt_required, current_identity
+# from werkzeug.security import safe_str_cmp
 
 class UserMethods():
     def __init__(self, email, username, password, about_me='', new_user=False):

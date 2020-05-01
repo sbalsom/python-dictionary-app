@@ -1,7 +1,8 @@
-from app import db
+
 # import os
 from app.methods import w, uw, u, d
 # from app.api.dictionaries import d
+from app import db
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),

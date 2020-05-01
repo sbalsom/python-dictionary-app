@@ -7,9 +7,19 @@ from config import Config
 from logging.handlers import RotatingFileHandler
 # from . import db
 
+from flask_jwt_extended import JWTManager
+# (
+#     JWTManager, jwt_required, create_access_token,
+#     jwt_refresh_token_required, create_refresh_token,
+#     get_jwt_identity
+# )
+
+# TODO import from my own file security.py somewhere in project
+# from app.auth.security import authenticate, identity
+
 db = SQLAlchemy()
 migrate = Migrate()
-
+jwt = JWTManager()
 # config_class = os.environ.get('CONFIG_CLASS')
 
 def create_app(config=Config):
@@ -18,7 +28,9 @@ def create_app(config=Config):
     app = Flask(__name__)
     app.config.from_object(config)
     db.init_app(app)
-    migrate.init_app(app, db)
+    jwt.init_app(app)
+    # jwt.init_app(app, authenticate, identity)
+    # migrate.init_app(app, db)
 
     from app.api.users import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')
@@ -31,6 +43,10 @@ def create_app(config=Config):
 
     from app.api.dictionaries import bp as dictionaries_bp
     app.register_blueprint(dictionaries_bp, url_prefix='/api/my')
+
+    from app.api.auth import bp as auth_bp
+    app.register_blueprint(auth_bp, url_prefix='/auth')
+
 
     if not app.debug and not app.testing:
 
@@ -51,5 +67,4 @@ def create_app(config=Config):
             app.logger.setLevel(logging.INFO)
             app.logger.info('Dictionary Initialization')
     return app
-
 from app import models

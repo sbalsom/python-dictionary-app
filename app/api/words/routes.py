@@ -4,8 +4,12 @@ from app.models import Word
 from app.api.errors import bad_request
 from app.api.words import bp
 
+from flask_jwt_extended import jwt_required, get_jwt_identity
+
 @bp.route('/words', methods=['GET'])
+@jwt_required
 def index():
+    username = get_jwt_identity()
     words = Word.query.all()
     json = Word.as_json_collection(words)
     return jsonify(json)
