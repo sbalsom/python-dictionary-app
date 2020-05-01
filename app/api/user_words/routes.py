@@ -1,6 +1,5 @@
 from flask import jsonify, request, url_for, g, abort
 from app import db
-from app.api.auth import token_auth
 from app.api.errors import bad_request
 from app.api.user_words import bp
 from app.models import User, Word, Dictionary, UserWord
@@ -8,15 +7,14 @@ from sqlalchemy.exc import IntegrityError
 
 
 @bp.route('/words', methods=['GET'])
-@token_auth.login_required
 def index():
-    print(g.current_user)
+    g.current_user = User.query.get(3)
     words = g.current_user.words
     return jsonify(Word.as_json_collection(words))
 
 @bp.route('/words/<int:id>', methods=['GET'])
-@token_auth.login_required
 def show(id):
+    g.current_user = User.query.get(3)
     data = request.get_json()
     w_id = data["word_id"]
     d_id = data["dictionary_id"]
@@ -25,8 +23,8 @@ def show(id):
     return jsonify(user_word.as_json())
 
 @bp.route('/words', methods=['POST'])
-@token_auth.login_required
 def create():
+    g.current_user = User.query.get(3)
     data = request.get_json() or {}
     dictionary = Dictionary.query.get(data['dictionary_id'])
     if dictionary in g.current_user.dictionaries:
@@ -53,11 +51,9 @@ def create():
     return response
 
 @bp.route('/words/<int:id>', methods=['PUT'])
-@token_auth.login_required
 def update(id):
     pass
 
 @bp.route('/words/<int:id>', methods=['DELETE'])
-@token_auth.login_required
 def destroy(id):
     pass
