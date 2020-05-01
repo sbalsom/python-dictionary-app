@@ -1,3 +1,9 @@
+from werkzeug.security import generate_password_hash, check_password_hash
+import base64
+from datetime import datetime, timedelta
+import os
+from app import db
+
 class UserMethods():
     def __repr__(self):
         return '<User {}: {}>'.format(self.id, self.username)
@@ -46,13 +52,59 @@ class UserMethods():
         return self.followed.filter(
               followers.c.followed_id == user.id).count() > 0
 
-    # def from_json(self, data, new_user=False):
-    #     for field in ['username', 'email', 'about_me']:
-    #         if field in data:
-    #             setattr(self, field, data[field])
-    #     if new_user and 'password' in data:
-    #         self.set_password(data['password'])
+    def set_password(self, password):
+        self.password_hash = generate_password_hash(password)
 
+    def check_password(self, password):
+        return check_password_hash(self.password_hash, password)
+
+    def get_access_token(self, expires_in=3600):
+        now = datetime.utcnow()
+        if self.access_token and self.access_token_expiration > now + timedelta(seconds=60):
+            return self.access_token
+        self.access_token = base64.b64encode(os.urandom(50)).decode('utf-8', 'ignore')
+        self.access_token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.access_token
+
+    def get_refresh_token(self, expires_in=28800):
+        now = datetime.utcnow()
+        if self.refresh_token and self.refresh_token_expiration > now + timedelta(seconds=60):
+            return self.refresh_token
+        self.refresh_token = base64.b64encode(os.urandom(50)).decode('utf-8', 'ignore')
+        self.refresh_token_expiration = now + timedelta(seconds=expires_in)
+        db.session.add(self)
+        return self.refresh_token
+
+    def revoke_access_token(self):
+        self.access_token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    def revoke_refresh_token(self):
+        self.refresh_token_expiration = datetime.utcnow() - timedelta(seconds=1)
+
+    @classmethod
+    def check_access_token(cls, access_token):
+        user = cls.query.filter_by(access_token=access_token).first()
+        if user is None:
+            return None
+        elif user.access_token_expiration < datetime.utcnow() and user.refresh_token_expiration >= datetime.utcnow():
+            # refresh_token = user.refresh_token
+            # user = cls.check_refresh_token(refresh_token)
+            user.get_access_token()
+            db.session.commit()
+            return user
+        elif user.access_token_expiration >= datetime.utcnow():
+            return user
+        else:
+            return None
+
+    @classmethod
+    def check_refresh_token(cls, refresh_token):
+      #  TODO : does this allow one user to replace themself with another ?
+        user = cls.query.filter_by(refresh_token=refresh_token).first()
+        if user is None or user.refresh_token_expiration < datetime.utcnow():
+            return None
+        return user
 
 #  TODO : a method to return a user's followers
 # 'follower_count': self.followers.count(),
@@ -62,12 +114,6 @@ class UserMethods():
 #             'followers': url_for('users.followers', id=self.id),
 #             'followed': url_for('users.followed', id=self.id),
 #           }
-# TODO : define user methods here
-# def set_password(self, password):
-#         self.password_hash = generate_password_hash(password)
-
-#     def check_password(self, password):
-#         return check_password_hash(self.password_hash, password)
 
 #     def get_token(self, expires_in=3600):
 #         now = datetime.utcnow()

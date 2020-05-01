@@ -3,15 +3,12 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from config import Config
-from flask_login import LoginManager
+# from flask_login import LoginManager
 from logging.handlers import RotatingFileHandler
 # from . import db
 
 db = SQLAlchemy()
 migrate = Migrate()
-# do i need this login manager now that the app has tokens ?
-login = LoginManager()
-
 
 # config_class = os.environ.get('CONFIG_CLASS')
 
@@ -22,13 +19,6 @@ def create_app(config=Config):
     app.config.from_object(config)
     db.init_app(app)
     migrate.init_app(app, db)
-
-    # from app.auth import bp as auth_bp
-    # app.register_blueprint(auth_bp, url_prefix='/auth')
-
-    # from app.main import bp as main_bp
-    # app.register_blueprint(main_bp)
-    login.init_app(app)
 
     from app.api.users import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')

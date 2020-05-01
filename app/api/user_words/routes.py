@@ -10,6 +10,7 @@ from sqlalchemy.exc import IntegrityError
 @bp.route('/words', methods=['GET'])
 @token_auth.login_required
 def index():
+    print(g.current_user)
     words = g.current_user.words
     return jsonify(Word.as_json_collection(words))
 
