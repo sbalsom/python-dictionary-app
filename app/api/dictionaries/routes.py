@@ -8,8 +8,8 @@ from app.api.dictionaries import bp
 @bp.route('/dictionaries', methods=['GET'])
 @token_auth.login_required
 def index():
-    dictionaries = g.current_user.dictionaries
-    return jsonify(Dictionary.collection(dictionaries.all()))
+    dictionaries = g.current_user.dictionaries.all()
+    return jsonify(Dictionary.as_json_collection(dictionaries))
 
 @bp.route('/dictionaries/<int:id>', methods=['GET'])
 @token_auth.login_required
@@ -29,6 +29,7 @@ def create():
         return bad_request('dictionary name cannot be blank')
     if  Dictionary.query.filter_by(name=data['name'], user_id=g.current_user.id).first():
         return bad_request('you already have a dictionary with that name')
+    # TODO : use a constructor
     dictionary = Dictionary(name=data['name'], user_id=g.current_user.id)
     db.session.add(dictionary)
     db.session.commit()

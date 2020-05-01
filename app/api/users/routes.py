@@ -1,6 +1,5 @@
 from flask import jsonify, request, url_for, g, abort
 from app import db
-# from app.models import User
 from app.models import User
 from app.api.users import bp
 from app.api.auth import token_auth
@@ -9,10 +8,8 @@ from app.api.errors import bad_request
 @bp.route('/users', methods=['GET'])
 @token_auth.login_required
 def index():
-    page = request.args.get('page', 1, type=int)
-    per_page = min(request.args.get('per_page', 10, type=int), 100)
-    data = User.paginated_collection(User.query, page, per_page, 'users.index')
-    return jsonify(data)
+    users = User.query.all()
+    return jsonify(User.as_json_collection(users))
 
 @bp.route('/users/<int:id>', methods=['GET'])
 @token_auth.login_required
@@ -28,8 +25,8 @@ def create():
         return bad_request('please use a different username')
     if User.query.filter_by(email=data['email']).first():
         return bad_request('please use a different email address')
-    user = User()
-    user.from_json(data, new_user=True)
+    user = User(data['email'], data['username'], data['password'], new_user=True)
+    # user.from_json(data, new_user=True)
     db.session.add(user)
     db.session.commit()
     response = jsonify(user.as_json())

@@ -1,7 +1,5 @@
 from flask import g
 from flask_httpauth import HTTPBasicAuth, HTTPTokenAuth
-#  Here it fails to import
-# import app.api.users.user
 from app.models import User
 from app.api.errors import error_response
 
@@ -22,6 +20,7 @@ def basic_auth_error():
 
 @token_auth.verify_token
 def verify_token(token):
+  # todo : maybe in this method I can check refresh token then check access token
     g.current_user = User.check_token(token) if token else None
     return g.current_user is not None
 

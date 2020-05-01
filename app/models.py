@@ -1,8 +1,4 @@
-# from datetime import datetime
-# from app import db
-
 from flask import url_for
-
 from datetime import datetime
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -10,52 +6,13 @@ from flask_login import UserMixin
 import base64
 from datetime import datetime, timedelta
 import os
-# from app.api.words.word import Test
-# import app.api.words
-from app.methods import w, uw, d
-# from app.methods import user_word_methods as uw
-
-# from app.api.words import word
-
+from app.methods import w, uw, d, u
 
 followers = db.Table('followers',
     db.Column('follower_id', db.Integer, db.ForeignKey('users.id')),
     db.Column('followed_id', db.Integer, db.ForeignKey('users.id'))
 )
 
-class APIMixin(object):
-    @staticmethod
-    def paginated_collection(query, page, per_page, endpoint, **kwargs):
-        resources = query.paginate(page, per_page, False)
-        response = {
-            'followed_users': [item.as_json() for item in resources.items],
-            '_meta': {
-                'page': page,
-                'per_page': per_page,
-                'total_pages': resources.pages,
-                'total_items': resources.total
-            },
-            '_links': {
-                'self': url_for(endpoint, page=page, per_page=per_page,
-                                **kwargs),
-                'next': url_for(endpoint, page=page + 1, per_page=per_page,
-                                **kwargs) if resources.has_next else None,
-                'prev': url_for(endpoint, page=page - 1, per_page=per_page,
-                                **kwargs) if resources.has_prev else None
-            }
-        }
-        return response
-
-    @staticmethod
-    def collection(items):
-        response = {
-            'items': [item.as_json() for item in items],
-            '_meta': {
-                'total_items': len(items)
-            }
-        }
-
-        return response
 class Dictionary(d.DictionaryMethods, db.Model):
     __tablename__ = 'dictionaries'
     id = db.Column(db.Integer, primary_key=True)
@@ -66,18 +23,6 @@ class Dictionary(d.DictionaryMethods, db.Model):
                                        onupdate=db.func.current_timestamp())
 
     words = db.relationship('UserWord', back_populates='dictionary')
-
-    def __repr__(self):
-        return '<Dictionary {}: {} by {}>'.format(self.id, self.name, self.user_id)
-
-    # def as_json(self):
-    #     response = {
-    #       'id': self.id,
-    #       'name': self.name,
-    #       'owner': self.owner.as_json(),
-    #       '_link': url_for('dictionaries.show', id=self.id)
-    #     }
-    #     return response
 
 class UserWord(uw.UserWordMethods, db.Model):
     __tablename__ = 'user_words'
@@ -101,7 +46,7 @@ class Word(w.WordMethods, db.Model):
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                          onupdate=db.func.current_timestamp())
 
-class User(UserMixin, db.Model):
+class User(u.UserMethods, UserMixin, db.Model):
     __tablename__ = 'users'
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(64), index=True, unique=True)
@@ -120,9 +65,6 @@ class User(UserMixin, db.Model):
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
 
     words = db.relationship('Word', secondary='user_words', primaryjoin=id == UserWord.user_id, secondaryjoin=UserWord.word_id == Word.id, lazy='subquery', backref=db.backref('users'), foreign_keys=[UserWord.user_id, UserWord.word_id])
-
-    def __repr__(self):
-        return '<User {}: {}>'.format(self.id, self.username)
 
     def set_password(self, password):
         self.password_hash = generate_password_hash(password)
@@ -165,23 +107,6 @@ class User(UserMixin, db.Model):
         # TODO : only the last ten or so
         return UserWord.query.join(followers, (followers.c.followed_id == UserWord.user_id)).filter(followers.c.follower_id == self.id).order_by(UserWord.date_created.desc())
         pass
-
-    def as_json(self, include_email=False):
-        response = {
-          'id': self.id,
-          'username': self.username,
-          'follower_count': self.followers.count(),
-          'followed_count': self.followed.count(),
-          '_links': {
-            'self': url_for('users.show', id=self.id),
-            'followers': url_for('users.followers', id=self.id),
-            'followed': url_for('users.followed', id=self.id),
-          }
-        }
-
-        if include_email:
-          response['email'] = self.email
-        return response
 
     def from_json(self, data, new_user=False):
         for field in ['username', 'email', 'about_me']:

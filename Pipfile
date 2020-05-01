@@ -16,6 +16,7 @@ flask-httpauth = "*"
 psycopg2 = "*"
 gunicorn = "*"
 flask-jwt = "*"
+flask-jwt-extended = "*"
 
 [requires]
 python_version = "3.7"
