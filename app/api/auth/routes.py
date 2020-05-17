@@ -38,15 +38,3 @@ def refresh():
         'access_token': create_access_token(identity=identity)
     }
     return jsonify(token), 200
-
-
-
-# username = user.username
-#     tokens = {
-#         'access_token': create_access_token(identity=username),
-#         'refresh_token': create_refresh_token(identity=username)
-#     }
-#     response = jsonify(tokens)
-#     response.status_code = 200
-#     response.headers['Location'] = url_for('users.show', id=user.id)
-#     return response

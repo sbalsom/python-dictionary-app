@@ -30,7 +30,7 @@ def create_app(config=Config):
     db.init_app(app)
     jwt.init_app(app)
     # jwt.init_app(app, authenticate, identity)
-    # migrate.init_app(app, db)
+    migrate.init_app(app, db)
 
     from app.api.users import bp as api_bp
     app.register_blueprint(api_bp, url_prefix='/api')

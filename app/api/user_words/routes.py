@@ -2,7 +2,7 @@ from flask import jsonify, request, url_for, g, abort
 from app import db
 from app.api.errors import bad_request
 from app.api.user_words import bp
-from app.models import User, Word, Dictionary, UserWord
+from app.models import User, Word, Dictionary, UserWord, Translation
 from sqlalchemy.exc import IntegrityError
 
 
@@ -45,6 +45,13 @@ def create():
         db.session.commit()
     except IntegrityError:
         return bad_request('word already is in your dictionary')
+    if 'description' in data:
+        user_word.description = data['description']
+    if 'translations' in data:
+        for t in data['translations']:
+            trns = Translation(word_id=word.id, dictionary_id=dictionary.id, sentence=t)
+            db.session.add(trns)
+            db.session.commit()
     response = jsonify(word.as_json())
     response.status_code = 201
     response.headers['Location'] = url_for('words.show', id=word.id)

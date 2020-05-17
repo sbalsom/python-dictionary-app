@@ -18,6 +18,8 @@ class WordMethods():
     def as_json(self):
         response = {
           '_id': self.id,
-          'name': self.name
+          'name': self.name,
+          'description': self.description,
+          'translations': [t.as_json() for t in translations]
         }
         return response
