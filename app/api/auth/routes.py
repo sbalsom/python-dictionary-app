@@ -15,8 +15,8 @@ def login():
     data = request.get_json()
 
     user = User.query.filter_by(username=data['username']).first()
-
     if user and user.check_password(data['password']):
+        g.current_user = user
         # when authenticated, return a fresh access token and a refresh token
         identity = {
             'id': user.id,

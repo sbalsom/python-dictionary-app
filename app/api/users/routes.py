@@ -4,12 +4,6 @@ from app.models import User
 from app.api.users import bp
 from app.api.errors import bad_request
 from flask_jwt_extended import create_access_token, create_refresh_token
-# (
-#     JWTManager, jwt_required, create_access_token,
-#     jwt_refresh_token_required, create_refresh_token,
-#     get_jwt_identity
-# )
-
 
 @bp.route('/users', methods=['GET'])
 def index():
@@ -30,7 +24,6 @@ def create():
     if User.query.filter_by(email=data['email']).first():
         return bad_request('please use a different email address')
     user = User(data['email'], data['username'], data['password'], new_user=True)
-    # user.from_json(data, new_user=True)
     db.session.add(user)
     db.session.commit()
     identity = {
@@ -40,13 +33,12 @@ def create():
     }
     tokens = {
         'access_token': create_access_token(identity=identity, fresh=True),
-        'refresh_token': create_refresh_token(identity=identity, fresh=True)
+        'refresh_token': create_refresh_token(identity=identity)
     }
     response = jsonify(tokens)
     response.status_code = 200
     response.headers['Location'] = url_for('users.show', id=user.id)
     return response
-    # return jsonify(tokens), 200
 
 @bp.route('/users/<int:id>', methods=['PUT'])
 def update(id):

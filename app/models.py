@@ -44,6 +44,7 @@ class Word(w.WordMethods, db.Model):
     date_created  = db.Column(db.DateTime, index=True, default=db.func.current_timestamp())
     date_modified = db.Column(db.DateTime,  default=db.func.current_timestamp(),
                                          onupdate=db.func.current_timestamp())
+    created_by = db.Column(db.String(64))
 
 class Translation(t.TranslationMethods, db.Model):
     __tablename__ = 'translations'
@@ -78,15 +79,5 @@ class User(u.UserMethods, db.Model):
         primaryjoin=(followers.c.follower_id == id),
         secondaryjoin=(followers.c.followed_id == id),
         backref=db.backref('followers', lazy='dynamic'), lazy='dynamic')
+    words = db.relationship('UserWord', primaryjoin=id == UserWord.user_id, foreign_keys=[UserWord.user_id])
 
-    words = db.relationship('Word', secondary='user_words', primaryjoin=id == UserWord.user_id, secondaryjoin=UserWord.word_id == Word.id, lazy='subquery', backref=db.backref('users'), foreign_keys=[UserWord.user_id, UserWord.word_id])
-
-
-# unneeded import stuff maybe i need elsewhere :
-# from flask import url_for
-# from datetime import datetime
-# from werkzeug.security import generate_password_hash, check_password_hash
-# from flask_login import UserMixin
-# import base64
-# from datetime import datetime, timedelta
-# UserMixin

@@ -1,7 +1,8 @@
 class WordMethods():
 
-    def __init__(self, name):
+    def __init__(self, name, created_by):
         self.name = name
+        self.created_by = created_by
 
 
     def __repr__(self):
@@ -19,7 +20,6 @@ class WordMethods():
         response = {
           '_id': self.id,
           'name': self.name,
-          'description': self.description,
-          'translations': [t.as_json() for t in translations]
+          'created_by': self.created_by
         }
         return response
