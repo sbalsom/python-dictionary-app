@@ -15,7 +15,6 @@ psycopg2-binary = "*"
 flask-httpauth = "*"
 psycopg2 = "*"
 gunicorn = "*"
-flask-jwt = "*"
 flask-jwt-extended = "*"
 
 [requires]
