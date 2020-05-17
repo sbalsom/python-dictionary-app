@@ -1,4 +1,5 @@
 from app.models import User
+# from flask import g
 from flask_jwt_extended import (
     create_access_token,
     create_refresh_token,
@@ -16,7 +17,8 @@ def login():
 
     user = User.query.filter_by(username=data['username']).first()
     if user and user.check_password(data['password']):
-        g.current_user = user
+        # g.current_user = user
+        # how do i set this for all requests ... sigh
         # when authenticated, return a fresh access token and a refresh token
         identity = {
             'id': user.id,
